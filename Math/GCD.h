@@ -24,6 +24,11 @@ T gcd(T a, T b) { // 非递归实现
 }
 
 template<class T>
+T lcm(T a, T b) { // 最小公倍数
+    return a * b / gcd(a, b);
+}
+
+template<class T>
 T gcd_(T a, T b) { // 递归实现
     return (!b) ? a : gcd(b, a % b);
 }

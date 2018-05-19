@@ -132,7 +132,6 @@ friend ostream &operator<<(ostream &os, BigInteger &b) {
 }
 
 BigInteger BigInteger::operator=(const char *ch) {
-    // TODO 前导0和负0
     memset(num, 0, sizeof(num));
     if (ch[0] != '-') { // 正数
         this->sign = true;
@@ -143,6 +142,7 @@ BigInteger BigInteger::operator=(const char *ch) {
     }
     for (int i = 0; i < len; i++)
         num[i] = ch[len - i - 1] - 48;
+    this->calc_len();
     return *this;
 }
 
@@ -192,11 +192,12 @@ bool BigInteger::operator==(const BigInteger &b) const {
 }
 
 BigInteger BigInteger::operator+(const BigInteger &b) const {
-    if (this->sign ^ b.sign) { // 符号相异 TODO
-        BigInteger res = (this->sign) ? (*this - b) : (b - *this);
-        res.sign = true;
-        return res;
+    if (this->sign ^ b.sign) { // 符号相异，转化为正数减负数，注意符号修改
+        BigInteger sub = this->sign ? b : *this; // 减数
+        sub.sign = true;
+        return this->sign ? (*this - sub) : (b - sub);
     }
+    // 符号相同
     BigInteger res;
     res.len = 0;
     res.sign = this->sign;
@@ -305,19 +306,78 @@ BigInteger BigInteger::operator*=(const BigInteger &b) {
     return *this = *this * b;
 }
 
-BigInteger BigInteger::operator/(const BigInteger &) const {
-    return BigInteger();
+BigInteger BigInteger::operator/(const BigInteger &b) const {
+    BigInteger res;
+    res.len = this->len - b.len + 1;
+    if (res.len < 0) {
+        res.len = 1; // res 值为0
+        return res;
+    }
+    BigInteger dividend = *this, divisor = b; // 该函数是const类型
+    // TODO
+    while () {
+
+    }
+    res.calc_len();
+    res.sign = !(this->sign ^ b.sign); // 同或
+    return res;
 }
 
-BigInteger BigInteger::operator/=(const BigInteger &) {
-    return BigInteger();
+BigInteger BigInteger::operator/=(const BigInteger &b) {
+    return *this = *this / b;
+}
+
+BigInteger BigInteger::operator%(const BigInteger &b) const {
+    BigInteger x = *this, y = b;
+    x.sign = y.sign = true; // TODO WHY?
+    BigInteger res, t = x / y * y;
+    res = x - t;
+    res.sign = this->sign;
+    return res;
+}
+
+BigInteger BigInteger::pow(const BigInteger &b) const {
+    BigInteger res = 1;
+    BigInteger a = *this, n = b;
+    // 快速幂计算 a^n
+    while (n != 0) {
+        if (n % 2 != 0)
+            res *= a;
+        a *= a;
+        n /= 2;
+    }
+    return res;
+}
+
+BigInteger BigInteger::factorial() const {
+    BigInteger res = 1;
+    for (BigInteger i = 1; i <= *this; i++)
+        res *= i;
+    return res;
 }
 
 void BigInteger::calc_len() {
-    if (this->len == 0) // 如果数是0，长度为1
+    if (this->len == 0) // 如果数是0，长度应为1
         len++;
-    while (len > 1 && num[len - 1] == '\0')
+    while (len > 1 && (num[len - 1] == '\0' || num[len - 1] == '0')) // 消除前导0
         len--;
+    if (len == 1 && num[0] == 0) // 消除负0
+        this->sign = true;
+}
+
+BigInteger BigInteger::sqrt() const {
+    if (*this < 0) // 实数域内
+        return -1;
+    if (*this <= 1)
+        return *this;
+    BigInteger l = 0, r = *this, mid;
+    while (r - l > 1) {
+        mid = (l + r) / 2;
+        if (mid * mid > *this)
+            r = mid;
+        else l = mid;
+    }
+    return l; // 向下取整
 }
 
 BigInteger::~BigInteger() {
