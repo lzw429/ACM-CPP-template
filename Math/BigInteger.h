@@ -1,6 +1,7 @@
 //
 // Created by 舒意恒 on 2018/5/16.
 // 完成高精度整数的加减乘除以及取模运算。
+// 参考文献：https://menyf.gitbooks.io/acm-icpc-template/8_%E5%85%B6%E4%BB%96/%E5%A4%A7%E6%95%B0%E7%B1%BB.html
 //
 
 #ifndef ACM_CPP_TEMPLATE_BIGNUMBER_H
@@ -8,6 +9,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <cassert>
 
 #define MAX_L 2005
 using namespace std;
@@ -307,6 +309,7 @@ BigInteger BigInteger::operator*=(const BigInteger &b) {
 }
 
 BigInteger BigInteger::operator/(const BigInteger &b) const {
+    assert(b != 0);
     BigInteger res;
     res.len = this->len - b.len + 1;
     if (res.len < 0) {
@@ -314,9 +317,31 @@ BigInteger BigInteger::operator/(const BigInteger &b) const {
         return res;
     }
     BigInteger dividend = *this, divisor = b; // 该函数是const类型
-    // TODO
-    while () {
-
+    dividend.sign = divisor.sign = true;
+    int q = res.len - 1; // 商的索引 index of quotient
+    int t = this->len - 1; // 被除数的索引 index of *this
+    while (q >= 0) {
+        while (dividend.num[t] == 0) // 去除被除数前导0
+            t--;
+        if (q > t) // 商的位数不超过被除数的位数
+            q = t;
+        char d[MAX_L] = {0}; // 存储cur_dividend
+        for (int i = t; i >= q; i--)
+            d[t - i] = (char) (dividend.num[i] + '0');
+        BigInteger cur_dividend = d;
+        if (cur_dividend < divisor) { // 当前被除数小于除数
+            q--; // 被除数补下一位
+            continue;
+        }
+        int quotient_bit = 0;
+        while (divisor * quotient_bit <= cur_dividend)
+            quotient_bit++; // 退出while时，quotient_bit 已经超出1
+        res.num[q] = quotient_bit--;
+        BigInteger product = divisor * quotient_bit;
+        for (int i = 0; i < q; i++)
+            product *= 10; // product * 10^q
+        dividend -= product;
+        q--;
     }
     res.calc_len();
     res.sign = !(this->sign ^ b.sign); // 同或
@@ -329,9 +354,9 @@ BigInteger BigInteger::operator/=(const BigInteger &b) {
 
 BigInteger BigInteger::operator%(const BigInteger &b) const {
     BigInteger x = *this, y = b;
-    x.sign = y.sign = true; // TODO WHY?
-    BigInteger res, t = x / y * y;
-    res = x - t;
+    x.sign = y.sign = true; // 有必要
+    BigInteger res, product = x / y * y;
+    res = x - product;
     res.sign = this->sign;
     return res;
 }
@@ -380,8 +405,6 @@ BigInteger BigInteger::sqrt() const {
     return l; // 向下取整
 }
 
-BigInteger::~BigInteger() {
-
-}
+BigInteger::~BigInteger() {}
 
 #endif //ACM_CPP_TEMPLATE_BIGNUMBER_H
