@@ -26,7 +26,7 @@ inline int solve(double a[][MAXN], bool l[], double ans[], const int &n, double 
         for (int j = r; j < n; j++) {
             if (fabs(a[j][i]) > EPS) {
                 for (int k = i; k <= n; k++) {
-                    double t = a[j][k];
+                    double t = a[j][k]; // TODO swap
                     a[j][k] = a[r][k];
                     a[r][k] = t;
                 }
