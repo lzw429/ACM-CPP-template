@@ -15,7 +15,7 @@ using namespace std;
 template<class T>
 struct Matrix {
     int n, m; // 矩阵大小
-    long long mod = 0x3f3f3f3f; // 用于模运算
+    long long mod; // 用于模运算
     vector<vector<T>> mat; // 矩阵内容
 
     void clear();
@@ -47,20 +47,21 @@ template<class T>
 Matrix<T>::Matrix() {
     this->n = 0;
     this->m = 0;
+    this->mod = 0x3f3f3f3f;
 }
 
 template<class T>
 Matrix<T>::Matrix(int n, int m) {
     this->n = n;
     this->m = m;
-    this->clear();
+    this->mod = 0x3f3f3f3f;
     mat.resize(n, vector<T>(m));
 }
 
 template<class T>
 Matrix<T>::Matrix(int n) {
-    this->clear();
     this->n = this->m = n;
+    this->mod = 0x3f3f3f3f;
     mat.resize(n, vector<T>(n));
     for (int i = 0; i < n; i++)
         mat[i][i] = 1;
@@ -100,10 +101,11 @@ template<class T>
 Matrix<T> Matrix<T>::operator*(const Matrix &b) const {
     assert(this->m == b.n);
     Matrix<T> res(this->n, b.m);
+    res.mod = this->mod;
     for (int i = 0; i < n; i++)
         for (int j = 0; j < b.m; j++)
             for (int k = 0; k < this->m; k++)
-                res.mat[i][j] = (res.mat[i][j] + this->mat[i][k] * b.mat[k][j]) & this->mod;
+                res.mat[i][j] = (res.mat[i][j] + this->mat[i][k] * b.mat[k][j]) % (T) this->mod;
     return res;
 }
 
@@ -116,7 +118,7 @@ template<class T>
 Matrix<T> Matrix<T>::operator*(const T num) const {
     for (int i = 0; i < this->n; i++) {
         for (int j = 0; j < this->m; j++) {
-            mat[i][j] = (mat[i][j] * num) % mod;
+            mat[i][j] = (mat[i][j] * num) % (T) mod;
         }
     }
     return *this;

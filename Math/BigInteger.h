@@ -121,14 +121,14 @@ string BigInteger::to_string() const {
     return res;
 }
 
-friend istream &operator>>(istream &is, BigInteger &b) {
+istream &operator>>(istream &is, BigInteger &b) {
     string str;
     is >> str; // 将输入内容存储到str
     b = str; // 赋值给b
     return is;
 }
 
-friend ostream &operator<<(ostream &os, BigInteger &b) {
+ostream &operator<<(ostream &os, BigInteger &b) {
     os << b.to_string();
     return os;
 }
